@@ -3,13 +3,18 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>bluesalt-pay</artifactId>
-        <groupId>com.bluesalt</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
+    <groupId>com.bluesalt</groupId>
     <modelVersion>4.0.0</modelVersion>
-
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>shared-dto</name>
     <artifactId>shared-dto</artifactId>
+    <description>Common Classes and Objects used by all Bluesalt=pay services</description>
 
     <dependencies>
         <dependency>
@@ -39,4 +44,5 @@
             <version>2.0.2</version>
         </dependency>
     </dependencies>
+    <build><finalName>shared-dto</finalName></build>
 </project>

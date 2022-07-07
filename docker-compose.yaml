@@ -1,0 +1,124 @@
+version: '3.8'
+services:
+  billing-service:
+    container_name: billing-service
+    build:
+      context: ./billing-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - db
+      - zookeeper
+      - broker
+    environment:
+      - DATASOURCE_DRIVER=h2
+      - DATASOURCE_URL=jdbc:mysql://db/billingdb
+      - DATASOURCE_USERNAME=sa
+      - DATASOURCE_PASSWORD=password
+      - SERVER_PORT=8082
+      - KAFKA_BOOTSTRAP_SERVERS=broker:9092
+      - KAFKA_PARTITIONS=3
+      - KAFKA_REPLICAS=1
+      - KAFKA_TOPIC_NAME=transaction-topic
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+
+  customer-service:
+    container_name: customer-service
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db
+      - zookeeper
+      - broker
+    environment:
+      - DATASOURCE_DRIVER=mysql
+      - DATASOURCE_URL=jdbc:mysql://db/customerdb
+      - DATASOURCE_USERNAME=sa
+      - DATASOURCE_PASSWORD=password
+      - SERVER_PORT=8082
+      - KAFKA_BOOTSTRAP_SERVERS=broker:9092
+      - KAFKA_PARTITIONS=3
+      - KAFKA_REPLICAS=1
+      - KAFKA_TOPIC_NAME=funding-topic
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+
+  billing-worker-service:
+    container_name: billing-worker-service
+    build:
+      context: ./billing-worker-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      - db
+      - zookeeper
+      - broker
+    environment:
+      - DATASOURCE_DRIVER=mysql
+      - DATASOURCE_URL=jdbc:mysql://db/billingdb
+      - DATASOURCE_USERNAME=sa
+      - DATASOURCE_PASSWORD=password
+      - SERVER_PORT=8082
+      - KAFKA_BOOTSTRAP_SERVERS=broker:9092
+      - KAFKA_PARTITIONS=3
+      - KAFKA_REPLICAS=1
+      - KAFKA_TOPIC_NAME=transaction-topic
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+
+  db:
+    platform: linux/x86_64
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=billingdb
+    volumes:
+      - db:/var/lib/mysql
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.2.1
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  broker:
+    image: confluentinc/cp-server:6.2.1
+    hostname: broker
+    container_name: broker
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+
+volumes:
+  db:

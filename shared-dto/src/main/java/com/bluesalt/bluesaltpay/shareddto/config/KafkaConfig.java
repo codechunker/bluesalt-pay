@@ -7,15 +7,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
-@Configuration
-@ConfigurationProperties("bluesalt.kafka")
-@Data
+//@Configuration
+//@ConfigurationProperties("bluesalt.kafka")
+//@Data
 public class KafkaConfig {
     private int partitions;
     private int replicas;
     private String topicName;
 
-    @Bean
+//    @Bean
     public NewTopic createTopic() {
         return TopicBuilder.name(topicName)
                 .partitions(partitions)
