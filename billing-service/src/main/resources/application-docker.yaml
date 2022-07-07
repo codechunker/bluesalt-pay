@@ -1,0 +1,30 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring.kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  consumer:
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: com.bluesalt.bluesaltpay.billingservice.config.FundAccountRequestDeserializer
+    properties:
+      spring:
+        json:
+          trusted:
+            packages: "*"
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+
+spring:
+  sql:
+    init:
+      platform: mysql
+
+  datasource.url: ${DATASOURCE_URL}
+  datasource.username: ${DATASOURCE_USERNAME}
+  datasource.password: ${DATASOURCE_PASSWORD}
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
