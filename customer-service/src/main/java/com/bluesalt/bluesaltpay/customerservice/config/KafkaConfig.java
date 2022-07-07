@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
-@ConfigurationProperties("bluesalt.kafka")
+@ConfigurationProperties("bluesalt.kafka.customer")
 @Data
 public class KafkaConfig {
     private int partitions;
